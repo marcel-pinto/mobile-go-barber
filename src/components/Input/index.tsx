@@ -1,4 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import React, {
+  useEffect,
+  useRef,
+  forwardRef,
+  useImperativeHandle,
+} from 'react';
 import { TextInputProps } from 'react-native';
 import { useField } from '@unform/core';
 
@@ -13,19 +18,32 @@ interface InputValueReference {
   value: string;
 }
 
+interface InputRef {
+  focus(): void;
+}
+
 const textColor = '#666360';
 
-const Input: React.FC<InputProps> = ({ name, icon, ...otherProps }) => {
+const Input: React.ForwardRefRenderFunction<InputRef, InputProps> = (
+  { name, icon, ...otherProps },
+  ref,
+) => {
   const { registerField, fieldName, defaultValue = '', error } = useField(name);
   const inputElementRef = useRef<any>(null);
   const inputValueRef = useRef<InputValueReference>({ value: defaultValue });
+
+  useImperativeHandle(ref, () => ({
+    focus() {
+      inputElementRef.current.focus();
+    },
+  }));
 
   useEffect(() => {
     registerField<string>({
       name: fieldName,
       ref: inputValueRef.current,
       path: 'value',
-      setValue(ref: any, value) {
+      setValue(reference: any, value) {
         inputValueRef.current.value = value;
         inputElementRef.current.setNativeProps({ text: value });
       },
@@ -53,4 +71,4 @@ const Input: React.FC<InputProps> = ({ name, icon, ...otherProps }) => {
   );
 };
 
-export default Input;
+export default forwardRef(Input);
