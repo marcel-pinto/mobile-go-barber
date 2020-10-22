@@ -49,6 +49,7 @@ export const AuthProvider: React.FC = ({ children }) => {
 
       if (token && user) {
         setData({ token, user: JSON.parse(user) });
+        api.defaults.headers.authorization = `Bearer ${token}`;
       }
 
       setLoading(false);
@@ -66,6 +67,9 @@ export const AuthProvider: React.FC = ({ children }) => {
       ['@GoBarber:token', token],
       ['@GoBarber:user', JSON.stringify(user)],
     ]);
+
+    api.defaults.headers.authorization = `Bearer ${token}`;
+
     setData({ token, user });
   }, []);
 
