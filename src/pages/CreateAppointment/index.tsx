@@ -111,23 +111,21 @@ const CreateAppointment: React.FC = () => {
       const date = new Date(selectedDate);
 
       date.setHours(selectedHour);
-      date.setMinutes(0);
-      date.setSeconds(0);
-      date.setMilliseconds(0);
-
+      const parsedDate = format(date, 'yyyy-MM-dd HH:00');
       await api.post('appointments', {
         provider_id: selectedProvider,
-        date,
+        date: parsedDate,
       });
 
       navigate('AppointmentsCreated', { date: date.getTime() });
     } catch (error) {
+      console.log(error);
       Alert.alert(
         'Erro ao criar agendamento',
         'Ocorreu um erro ao tentar criar o agendamento, tente novamente',
       );
     }
-  }, [selectedDate, selectedHour, navigate]);
+  }, [selectedDate, selectedHour, navigate, selectedProvider]);
 
   const morningAvailability = useMemo(
     () =>
