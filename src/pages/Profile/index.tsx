@@ -6,8 +6,8 @@ import {
   Alert,
 } from 'react-native';
 import * as Yup from 'yup';
-
 import Icon from 'react-native-vector-icons/Feather';
+import ImagePicker from 'react-native-image-picker';
 import { useNavigation } from '@react-navigation/native';
 import { Form } from '@unform/mobile';
 import { FormHandles } from '@unform/core';
@@ -117,12 +117,50 @@ const SignUp: React.FC = () => {
         );
       }
     },
-    [navigation],
+    [navigation, updateUser],
   );
 
   const handleGoBack = useCallback(() => {
     navigation.goBack();
-  }, []);
+  }, [navigation]);
+
+  const handleUpdateAvatar = useCallback(() => {
+    ImagePicker.showImagePicker(
+      {
+        title: 'Selecione um avatar',
+        cancelButtonTitle: 'Cancelar',
+        takePhotoButtonTitle: 'User camera',
+        chooseFromLibraryButtonTitle: 'Escolher da galeria',
+      },
+      response => {
+        if (response.didCancel) {
+          return;
+        }
+
+        if (response.error) {
+          Alert.alert('Erro ao atualizar seu avatar.');
+          console.log(response.error);
+          return;
+        }
+
+        const data = new FormData();
+
+        data.append('avatar', {
+          type: 'image/jpeg',
+          name: `${user.id}.jpg`,
+          uri: response.uri,
+        });
+
+        api
+          .patch('users/avatar', data)
+          .then(apiResponse => {
+            updateUser(apiResponse.data);
+          })
+          .catch(err => console.log(err));
+      },
+    );
+  }, [updateUser, user.id]);
+
   return (
     <>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding" enabled>
@@ -133,11 +171,7 @@ const SignUp: React.FC = () => {
           contentContainerStyle={{ flex: 1 }}
         >
           <Container>
-            <UserAvatarButton
-              onPress={() => {
-                console.log('avatar');
-              }}
-            >
+            <UserAvatarButton onPress={handleUpdateAvatar}>
               <UserAvatar source={{ uri: user.avatar_url }} />
             </UserAvatarButton>
 
