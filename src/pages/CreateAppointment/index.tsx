@@ -2,7 +2,9 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { format } from 'date-fns';
 import Icon from 'react-native-vector-icons/Feather';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker, {
+  AndroidEvent,
+} from '@react-native-community/datetimepicker';
 
 import { Alert, Platform } from 'react-native';
 import {
@@ -93,14 +95,17 @@ const CreateAppointment: React.FC = () => {
     setShowDatePicker(state => !state);
   }, []);
 
-  const handleDateChange = useCallback((event: any, date: Date | undefined) => {
-    if (Platform.OS === 'android') {
-      setShowDatePicker(false);
-    }
-    if (date) {
-      setSelectedDate(date);
-    }
-  }, []);
+  const handleDateChange = useCallback(
+    (event: AndroidEvent, date: Date | undefined) => {
+      if (Platform.OS === 'android') {
+        setShowDatePicker(false);
+      }
+      if (date) {
+        setSelectedDate(date);
+      }
+    },
+    [],
+  );
 
   const handleSelectHour = useCallback((hour: number) => {
     setSelectedHour(hour);
@@ -119,7 +124,6 @@ const CreateAppointment: React.FC = () => {
 
       navigate('AppointmentsCreated', { date: date.getTime() });
     } catch (error) {
-      console.log(error);
       Alert.alert(
         'Erro ao criar agendamento',
         'Ocorreu um erro ao tentar criar o agendamento, tente novamente',
@@ -150,6 +154,7 @@ const CreateAppointment: React.FC = () => {
         })),
     [availability],
   );
+
   return (
     <Container>
       <Header>
@@ -191,15 +196,19 @@ const CreateAppointment: React.FC = () => {
             </OpenDatePickerButtonText>
           </OpenDatePickerButton>
 
-          {showDatePicker && (
-            <DateTimePicker
-              mode="date"
-              display="calendar"
-              // textColor="#f4ede8"
-              onChange={handleDateChange}
-              value={selectedDate}
-            />
-          )}
+          {React.useMemo(() => {
+            return (
+              showDatePicker && (
+                <DateTimePicker
+                  mode="date"
+                  display="calendar"
+                  // textColor="#f4ede8"
+                  onChange={handleDateChange}
+                  value={selectedDate}
+                />
+              )
+            );
+          }, [handleDateChange, selectedDate, showDatePicker])}
         </Calendar>
 
         <Schedule>
